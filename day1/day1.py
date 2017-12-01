@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import doctest
+import sys
+
+
+def inv_captcha(data: str) -> int:
+    """Compute the "inverse captcha".
+
+    >>> inv_captcha("1122")
+    3
+    >>> inv_captcha("1111")
+    4
+    >>> inv_captcha("1234")
+    0
+    >>> inv_captcha("91212129")
+    9
+    """
+    digits = [int(c) for c in data]
+    digits.append(digits[0])
+    total, prev = 0, None
+    for digit in digits:
+        if digit == prev:
+            total += digit
+        prev = digit
+    return total
+
+
+if __name__ == "__main__":
+    err, tot = doctest.testmod()
+    if err == 0:
+        print("{} tests OK :]".format(tot))
+
+    for fn in sys.argv[1:]:
+        with open(fn, "r") as fin:
+            data = fin.read().strip()
+        value = inv_captcha(data)
+        print("{}: {}".format(fn, value))
