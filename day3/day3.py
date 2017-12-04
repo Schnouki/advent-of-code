@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import doctest
+import itertools as it
 import sys
 import typing
 
@@ -10,7 +11,7 @@ class BaseSpiral:
         self.memory = [[1]]
         self.size = 1
 
-    def next_value(self):
+    def next_value(self, x, y):
         raise NotImplemented
 
     def grow(self):
@@ -21,28 +22,40 @@ class BaseSpiral:
             self._grow_odd()
 
     def _grow_even(self):
-        # Add a right column
-        for n in range(self.size - 1):
-            last = self.next_value()
-            self.memory[-n - 1].append(last)
+        # Add an empty top row
+        self.memory.insert(0, [None for _ in range(self.size)])
 
-        # Add a top row
-        row = [None for _ in range(self.size)]
-        for n in range(self.size):
-            row[self.size - n - 1] = self.next_value()
-        self.memory.insert(0, row)
+        # Add an empty right column
+        for n in range(1, self.size):
+            self.memory[n].append(None)
+
+        # Now fill the right column
+        x = self.size - 1
+        for y in range(self.size - 1, -1, -1):
+            self.memory[y][x] = self.next_value(x, y)
+
+        # And fill the top row
+        y = 0
+        for x in range(self.size - 2, -1, -1):
+            self.memory[y][x] = self.next_value(x, y)
 
     def _grow_odd(self):
-        # Add a left column
+        # Add an empty left column
         for n in range(self.size - 1):
-            last = self.next_value()
-            self.memory[n].insert(0, last)
+            self.memory[n].insert(0, None)
 
-        # Add a bottom row
-        row = [None for _ in range(self.size)]
-        for n in range(self.size):
-            row[n] = self.next_value()
-        self.memory.append(row)
+        # Add an empty bottom row
+        self.memory.append([None for _ in range(self.size)])
+
+        # Now fill the left column
+        x = 0
+        for y in range(self.size):
+            self.memory[y][x] = self.next_value(x, y)
+
+        # And fill the bottom row
+        y = self.size - 1
+        for x in range(1, self.size):
+            self.memory[y][x] = self.next_value(x, y)
 
 
 class SimpleSpiral(BaseSpiral):
@@ -50,7 +63,7 @@ class SimpleSpiral(BaseSpiral):
         super().__init__()
         self.last = 1
 
-    def next_value(self):
+    def next_value(self, x, y):
         self.last += 1
         return self.last
 
@@ -103,6 +116,58 @@ def steps(square: int) -> int:
     return dx + dy
 
 
+class AdjacentSpiral(BaseSpiral):
+    class TargetReached(Exception):
+        pass
+
+    def run(self, target):
+        self.target = target
+        try:
+            while True:
+                self.grow()
+        except self.TargetReached:
+            pass
+
+    def next_value(self, x, y):
+        val = 0
+        for dx, dy in it.product((-1, 0, 1), repeat=2):
+            if dx == 0 and dy == 0:
+                pass
+            v = None
+            xx, yy = x + dx, y + dy
+            if xx >= 0 and yy >= 0:
+                try:
+                    v = self.memory[yy][xx]
+                except IndexError:
+                    pass
+            if v is not None:
+                val += v
+        if val > self.target:
+            self.last_value = val
+            raise self.TargetReached()
+        return val
+
+
+def first_gt(target: int) -> int:
+    """Compute the first value written that is larger than the target.
+
+    This time the spiral memory is filled using the "largest adjacent value" method.
+
+    >>> first_gt(2)
+    4
+    >>> first_gt(8)
+    10
+    >>> first_gt(150)
+    304
+    >>> first_gt(800)
+    806
+    """
+
+    s = AdjacentSpiral()
+    s.run(target)
+    return s.last_value
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -112,3 +177,4 @@ if __name__ == "__main__":
 
     data1 = 289326
     print("Steps for %d: %d" % (data1, steps(data1)))
+    print("First adjacent value > %d: %d" % (data1, first_gt(data1)))
