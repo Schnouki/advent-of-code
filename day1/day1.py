@@ -5,7 +5,7 @@ import sys
 
 
 def inv_captcha(data: str) -> int:
-    """Compute the "inverse captcha".
+    """Compute the "inverse captcha" using the "next" digit.
 
     >>> inv_captcha("1122")
     3
@@ -26,6 +26,32 @@ def inv_captcha(data: str) -> int:
     return total
 
 
+def inv_captcha_hwa(data: str) -> int:
+    """Compute the "inverse captcha" using the digit halfway around.
+
+    >>> inv_captcha_hwa("1212")
+    6
+    >>> inv_captcha_hwa("1221")
+    0
+    >>> inv_captcha_hwa("123425")
+    4
+    >>> inv_captcha_hwa("123123")
+    12
+    >>> inv_captcha_hwa("12131415")
+    4
+    """
+    digits = [int(c) for c in data]
+    N = len(digits)
+    hwa = N // 2
+    total = 0
+    for n in range(N):
+        digit = digits[n]
+        other = digits[(n + hwa) % N]
+        if digit == other:
+            total += digit
+    return total
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -34,5 +60,5 @@ if __name__ == "__main__":
     for fn in sys.argv[1:]:
         with open(fn, "r") as fin:
             data = fin.read().strip()
-        value = inv_captcha(data)
-        print("{}: {}".format(fn, value))
+        print('Captcha "next" for {}: {}'.format(fn, inv_captcha(data)))
+        print('Captcha "HWA" for {}: {}'.format(fn, inv_captcha_hwa(data)))
