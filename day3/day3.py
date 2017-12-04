@@ -1,9 +1,58 @@
 #!/usr/bin/env python3
 
 import doctest
-import itertools as it
 import sys
 import typing
+
+
+class BaseSpiral:
+    def __init__(self):
+        self.memory = [[1]]
+        self.size = 1
+
+    def next_value(self):
+        raise NotImplemented
+
+    def grow(self):
+        self.size += 1
+        if self.size % 2 == 0:
+            self._grow_even()
+        else:
+            self._grow_odd()
+
+    def _grow_even(self):
+        # Add a right column
+        for n in range(self.size - 1):
+            last = self.next_value()
+            self.memory[-n - 1].append(last)
+
+        # Add a top row
+        row = [None for _ in range(self.size)]
+        for n in range(self.size):
+            row[self.size - n - 1] = self.next_value()
+        self.memory.insert(0, row)
+
+    def _grow_odd(self):
+        # Add a left column
+        for n in range(self.size - 1):
+            last = self.next_value()
+            self.memory[n].insert(0, last)
+
+        # Add a bottom row
+        row = [None for _ in range(self.size)]
+        for n in range(self.size):
+            row[n] = self.next_value()
+        self.memory.append(row)
+
+
+class SimpleSpiral(BaseSpiral):
+    def __init__(self):
+        super().__init__()
+        self.last = 1
+
+    def next_value(self):
+        self.last += 1
+        return self.last
 
 
 def spiral(target: int) -> typing.List[typing.List[int]]:
@@ -20,34 +69,11 @@ def spiral(target: int) -> typing.List[typing.List[int]]:
     >>> spiral(23)
     [[17, 16, 15, 14, 13], [18, 5, 4, 3, 12], [19, 6, 1, 2, 11], [20, 7, 8, 9, 10], [21, 22, 23, 24, 25]]
     """
-    memory = [[1]]
-    last, size = 1, 1
 
-    while last < target:
-        size += 1
-        if size % 2 == 0:
-            # Add a right column
-            for n in range(size - 1):
-                last += 1
-                memory[-n - 1].append(last)
-
-            # Add a top row
-            row = range(last + 1, last + 1 + size)
-            memory.insert(0, list(row)[::-1])
-            last = memory[0][0]
-
-        else:
-            # Add a left column
-            for n in range(size - 1):
-                last += 1
-                memory[n].insert(0, last)
-
-            # Add a bottom row
-            row = range(last + 1, last + 1 + size)
-            memory.append(list(row))
-            last = memory[-1][-1]
-
-    return memory
+    s = SimpleSpiral()
+    while s.last < target:
+        s.grow()
+    return s.memory
 
 
 def steps(square: int) -> int:
