@@ -33,20 +33,51 @@ def parse_connections(data: str) -> Connections:
     return conns
 
 
+def make_group(connections: Connections, leader: int) -> Group:
+    """Build the group containing leader.
+
+    >>> make_group(parse_connections(TEST_DATA), 0)
+    {0, 2, 3, 4, 5, 6}
+    >>> make_group(parse_connections(TEST_DATA), 1)
+    {1}
+    """
+    old_size = 0
+    group = {leader}
+    while len(group) != old_size:
+        old_size = len(group)
+        for n in group.copy():
+            group.update(connections[n])
+    return group
+
+
 def programs_in_group(data: str, leader: int = 0) -> int:
     """Count how many programs are in a group.
 
     >>> programs_in_group(TEST_DATA, 0)
     6
+    >>> programs_in_group(TEST_DATA, 1)
+    1
     """
-    old_size = 0
-    group = {leader}
     connections = parse_connections(data)
-    while len(group) != old_size:
-        old_size = len(group)
-        for n in group.copy():
-            group.update(connections[n])
+    group = make_group(connections, leader)
     return len(group)
+
+
+def count_groups(data: str) -> int:
+    """Count the number of groups.
+
+    >>> count_groups(TEST_DATA)
+    2
+    """
+    connections = parse_connections(data)
+    numbers = set(connections.keys())
+    groups = []
+    while len(numbers) > 0:
+        leader = numbers.pop()
+        group = make_group(connections, leader)
+        groups.append(group)
+        numbers.difference_update(group)
+    return len(groups)
 
 
 if __name__ == "__main__":
@@ -58,4 +89,5 @@ if __name__ == "__main__":
         with open(fn, "r") as fin:
             data = fin.read().strip()
 
-        print("Prgrams in group 0 for %s: %d" % (fn, programs_in_group(data)))
+        print("Programs in group 0 for %s: %d" % (fn, programs_in_group(data)))
+        print("Groups in %s: %d" % (fn, count_groups(data)))
