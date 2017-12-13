@@ -41,6 +41,15 @@ class Firewall:
                 severity += layer.get_severity(pos)
         return severity
 
+    def is_travel_safe(self, delay: int) -> bool:
+        """Check if a travel with the specified delay is save."""
+        for pos in range(max(self.layers.keys()) + 1):
+            layer = self.layers.get(pos, None)
+            if layer:
+                if layer.is_caught(pos + delay):
+                    return False
+        return True
+
 
 def severity(data: str) -> int:
     """Compute the severity for a whole trip.
@@ -50,6 +59,19 @@ def severity(data: str) -> int:
     """
     fw = Firewall(data)
     return fw.full_travel()
+
+
+def safe_delay(data: str) -> int:
+    """Find the smallest delay that guarantees a safe travel through the firewall.
+
+    >>> safe_delay(TEST_DATA)
+    10
+    """
+    delay = 0
+    fw = Firewall(data)
+    while not fw.is_travel_safe(delay):
+        delay += 1
+    return delay
 
 
 if __name__ == "__main__":
@@ -62,3 +84,4 @@ if __name__ == "__main__":
             data = fin.read().strip()
 
         print("Severity for %s: %d" % (fn, severity(data)))
+        print("Safe delay for %s: %d" % (fn, safe_delay(data)))
