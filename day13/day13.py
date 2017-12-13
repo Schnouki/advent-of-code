@@ -13,10 +13,10 @@ class Layer:
     def __init__(self, depth, size):
         self.depth = depth
         self.size = size
-        self._cycle_size = 2 * (size - 1)
+        self.cycle = 2 * (size - 1)
 
     def is_caught(self, clock):
-        return clock % self._cycle_size == 0
+        return clock % self.cycle == 0
 
     def get_severity(self, clock):
         if self.is_caught(clock):
@@ -74,6 +74,31 @@ def safe_delay(data: str) -> int:
     return delay
 
 
+def safe_delay_fast(data: str) -> int:
+    """Find the smallest delay for a safe travel, without brute-forcing…
+
+    >>> safe_delay_fast(TEST_DATA)
+    10
+    """
+    # Let's call the delay D. For each layer, we're caught when
+    # (D + depth) % cycle == 0
+    # <=> D % cycle + depth % cycle == 0
+    # <=> D % cycle = -depth % cycle
+    # (<=> D = cycle*N - depth)
+    fw = Firewall(data)
+    constraints = [(layer.cycle, layer.depth) for layer in fw.layers.values()]
+    delay = -1
+    bad = True
+    while bad:
+        delay += 1
+        bad = False
+        for cycle, depth in constraints:
+            if (delay + depth) % cycle == 0:
+                bad = True
+                break
+    return delay
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -84,4 +109,4 @@ if __name__ == "__main__":
             data = fin.read().strip()
 
         print("Severity for %s: %d" % (fn, severity(data)))
-        print("Safe delay for %s: %d" % (fn, safe_delay(data)))
+        print("Safe delay for %s: %d" % (fn, safe_delay_fast(data)))
