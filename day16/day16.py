@@ -33,19 +33,34 @@ def partner(programs: Programs, a: str, b: str) -> Programs:
     return exchange(programs, pa, pb)
 
 
-def dance(data: str, nb_programs: int = 16) -> str:
+def dance(data: str, nb_programs: int = 16, rounds: int = 1) -> str:
     """Let programs dance!
 
     >>> dance("s1,x3/4,pe/b", 5)
     'baedc'
+    >>> dance("s1,x3/4,pe/b", 5, 2)
+    'ceadb'
     """
-    programs = [chr(ord("a") + i) for i in range(nb_programs)]
     ops = {"s": spin, "x": exchange, "p": partner}
-    for op in data.split(","):
-        op_fn = ops[op[0]]
-        op_args = op[1:].split("/")
-        programs = op_fn(programs, *op_args)
-    return "".join(programs)
+    seen = {}
+    programs = [chr(ord("a") + i) for i in range(nb_programs)]
+    res = ""
+    step = 0
+    while step < rounds:
+        for op in data.split(","):
+            op_fn = ops[op[0]]
+            op_args = op[1:].split("/")
+            programs = op_fn(programs, *op_args)
+        res = "".join(programs)
+        if res in seen:
+            target = (rounds % step) - 1
+            for k, v in seen.items():
+                if v == target:
+                    return k
+        seen[res] = step
+        step += 1
+
+    return res
 
 
 if __name__ == "__main__":
@@ -58,3 +73,5 @@ if __name__ == "__main__":
             data = fin.read().strip()
 
         print("Order after dancing %s: %s" % (fn, dance(data)))
+        print("Order after billion-dancing %s: %s" %
+              (fn, dance(data, rounds=1000000000)))
