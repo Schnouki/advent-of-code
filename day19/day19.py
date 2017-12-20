@@ -23,15 +23,16 @@ DIRECTIONS = {
 }
 
 
-def walk_pipes(data: str) -> str:
+def walk_pipes(data: str) -> typing.Tuple[int, str]:
     """Walk along pipes and collect letters.
 
     >>> walk_pipes(TEST_DATA)
-    'ABCDEF'
+    (38, 'ABCDEF')
     """
     data = data.splitlines()
     letters = []
     direction = "down"
+    steps = 0
 
     # Initial position
     y = 0
@@ -61,8 +62,9 @@ def walk_pipes(data: str) -> str:
         px, py = x, y
         x += offset[0]
         y += offset[1]
+        steps += 1
 
-    return "".join(letters)
+    return (steps, "".join(letters))
 
 
 if __name__ == "__main__":
