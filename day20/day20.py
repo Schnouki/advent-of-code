@@ -9,17 +9,34 @@ TEST_DATA = """p=< 3,0,0>, v=< 2,0,0>, a=<-1,0,0>
 p=< 4,0,0>, v=< 0,0,0>, a=<-2,0,0>"""
 
 
+# Initial: (a, v, p)
+# Tick 1: (a, v+a, p+v+a)
+# Tick 2: (a, v+2a, p+2v+3a)
+# Tick 3: (a, v+3a, p+3v+6a)
+# Tick 4: (a, v+4a, p+4v+10a)
+# Tick 5: (a, v+5a, p+5v+15a)
+# ...
+# Tick n: (a, v+na, p+nv+(n(n+1)a)/2)
+
 @attr.s
 class Vec3:
     x: int = attr.ib()
     y: int = attr.ib()
     z: int = attr.ib()
 
-    def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
-        self.z += other.z
-        return self
+    def __add__(self, other):
+        if not isinstance(other, Vec3):
+            return NotImplemented
+        return Vec3(self.x + other.x,
+                    self.y + other.y,
+                    self.z + other.z)
+
+    def __rmul__(self, n: int):
+        if type(n) is not int:
+            return NotImplemented
+        return Vec3(n * self.x,
+                    n * self.y,
+                    n * self.z)
 
 
 @attr.s
@@ -31,6 +48,11 @@ class Particle:
     def tick(self):
         self.v += self.a
         self.p += self.v
+
+    def at_tick(self, n: int) -> 'Particle':
+        v = self.v + n * self.a
+        p = self.p + n * self.v + ((n * (n + 1)) // 2) * self.a
+        return Particle(p, v, self.a)
 
     @property
     def dist_origin(self):
@@ -69,18 +91,20 @@ def closest_to_origin(data: str) -> int:
 
     ticks = 0
     all_incr = False
-    while not (ticks % 1000 == 0 and all_incr):
-        # print(f"TICK {ticks}", file=sys.stderr)
-        ticks += 1
+    while not all_incr:
+        ticks += 1000
         dists = []
-        for p in particles:
-            db = p.dist_origin
-            p.tick()
-            da = p.dist_origin
+        for p0 in particles:
+            pt = p0.at_tick(ticks)
+            db = pt.dist_origin
+            pt.tick()
+            da = pt.dist_origin
             dists.append((db, da))
         all_incr = all(da > db for (db, da) in dists)
 
-    return min(range(len(particles)), key=lambda n: particles[n].dist_origin)
+    # print(f"FINAL TICK {ticks}", file=sys.stderr)
+
+    return min(range(len(particles)), key=lambda n: particles[n].at_tick(ticks).dist_origin)
 
 
 if __name__ == "__main__":
