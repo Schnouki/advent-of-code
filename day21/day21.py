@@ -158,4 +158,7 @@ if __name__ == "__main__":
         with open(fn, "r") as fin:
             data = fin.read().strip()
 
-        print("Pixels on for %s: %d" % (fn, count_pixels(data)))
+        print("Pixels on for %s (5 iterations): %d" %
+              (fn, count_pixels(data, 5)))
+        print("Pixels on for %s (18 iterations): %d" %
+              (fn, count_pixels(data, 18)))
