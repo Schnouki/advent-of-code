@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import itertools as it
 import doctest
 import sys
 
@@ -22,6 +23,29 @@ def compute_frequency(changes):
     return freq
 
 
+def first_freq_reached_twice(changes):
+    """Find out the first frequency reached twice.
+
+    >>> first_freq_reached_twice([1, -2, 3, 1])
+    2
+    >>> first_freq_reached_twice([+1, -1])
+    0
+    >>> first_freq_reached_twice([+3, +3, +4, -2, -4])
+    10
+    >>> first_freq_reached_twice([-6, +3, +8, +5, -6])
+    5
+    >>> first_freq_reached_twice([+7, +7, -2, -7, -4])
+    14
+    """
+    freq = 0
+    freqs = {0}
+    for change in it.cycle(changes):
+        freq += change
+        if freq in freqs:
+            return freq
+        freqs.add(freq)
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -32,3 +56,5 @@ if __name__ == "__main__":
             data = [int(line) for line in fin]
 
         print("Frequency for %s: %d" % (fn, compute_frequency(data)))
+        print("First frequency reached twice for %s: %d" %
+              (fn, first_freq_reached_twice(data)))
