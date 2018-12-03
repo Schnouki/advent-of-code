@@ -54,6 +54,18 @@ def strongest_bridge(comps):
     return max(bridge_strength(bridge) for bridge in valid_bridges(comps))
 
 
+def strongest_longest_bridge(comps):
+    """Find the strongest longest bridge.
+
+    >>> strongest_longest_bridge(((0, 2), (2, 2), (2, 3), (3, 4), (3, 5), (0, 1), (10, 1), (9, 10)))
+    19
+    """
+    bridges = list(valid_bridges(comps))
+    max_len = max(len(bridge) for bridge in bridges)
+    long_bridges = [bridge for bridge in bridges if len(bridge) == max_len]
+    return max(bridge_strength(bridge) for bridge in long_bridges)
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -68,3 +80,5 @@ if __name__ == "__main__":
             data = tuple(data)
 
         print("Strongest bridge for %s: %d" % (fn, strongest_bridge(data)))
+        print("Strongest longest bridge for %s: %d" %
+              (fn, strongest_longest_bridge(data)))
