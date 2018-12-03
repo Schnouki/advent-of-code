@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import collections
+import itertools as it
 import doctest
 import sys
 
@@ -46,6 +47,31 @@ def checksum(ids):
     return two * three
 
 
+def find_correct_boxes(ids):
+    """Find boxes with IDs that differ by exactly 1 character.
+
+    >>> find_correct_boxes(["abcde", "fghij", "klmno", "pqrst", "fguij", "axcye", "wvxyz"])
+    ('fghij', 'fguij')
+    """
+    for a, b in it.combinations(ids, 2):
+        diff = 0
+        for n in range(len(a)):
+            if a[n] != b[n]:
+                diff += 1
+        if diff == 1:
+            return a, b
+
+
+def find_correct_common_letters(ids):
+    """Find common letters between correct box IDs.
+
+    >>> find_correct_common_letters(["abcde", "fghij", "klmno", "pqrst", "fguij", "axcye", "wvxyz"])
+    'fgij'
+    """
+    a, b = find_correct_boxes(ids)
+    return "".join(a[n] if a[n] == b[n] else "" for n in range(len(a)))
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -56,3 +82,5 @@ if __name__ == "__main__":
             data = fin.read().strip().split()
 
         print("Checksum for %s: %d" % (fn, checksum(data)))
+        print("Common letters between correct box IDs for %s: %s" %
+              (fn, find_correct_common_letters(data)))
