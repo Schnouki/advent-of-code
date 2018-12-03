@@ -50,6 +50,20 @@ def count_overlaps(claims):
     return count_claims(claims)["X"]
 
 
+def find_non_overlapping_claim(claims):
+    """Find the ID of the only claim that doesn't overlap.
+
+    >>> find_non_overlapping_claim([("1", 1, 3, 4, 4), ("2", 3, 1, 4, 4), ("3", 5, 5, 2, 2)])
+    '3'
+    """
+    cnt = count_claims(claims)
+    for claim in claims:
+        id_ = claim[0]
+        expected_size = claim[3] * claim[4]
+        if id_ in cnt and cnt[id_] == expected_size:
+            return id_
+
+
 if __name__ == "__main__":
     err, tot = doctest.testmod()
     if err == 0:
@@ -66,3 +80,5 @@ if __name__ == "__main__":
                     x), int(y.rstrip(":")), int(w), int(h)))
 
         print("Overlaps for %s: %d" % (fn, count_overlaps(data)))
+        print("Non-overlapping claim for %s: %s" %
+              (fn, find_non_overlapping_claim(data)))
