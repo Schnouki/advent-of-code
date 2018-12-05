@@ -20,10 +20,15 @@
   (irregex-replace/all reaction-regex s))
 
 (define (polymer-react/full data #!optional progress)
-  (do ((s data (polymer-react s)))
-      ((not (irregex-search reaction-regex s)) s)
+  (let loop ((s data)
+             (len (string-length data)))
     (when progress
-      (print "Current length: " (string-length s)))))
+      (print "Current length: " len))
+    (set! s (polymer-react s))
+    (let ((new-len (string-length s)))
+      (if (= new-len len)
+          s
+          (loop s new-len)))))
 
 (define (solve-part1 data)
   (string-length (polymer-react/full data #t)))
