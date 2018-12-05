@@ -88,14 +88,44 @@
       (car (find (lambda (pair) (= (cdr pair) max-minutes))
                  (reverse (hash-table->alist minutes)))))))
 
-(define (solve-part1 input)
-  (let* ((records (parse-input input))
-         (most-asleep-guard (car (find-guard-most-asleep records)))
-         (most-asleep-minute (find-guard-most-asleep-minute records most-asleep-guard)))
+(define (solve-part1 data)
+  (let* ((most-asleep-guard (car (find-guard-most-asleep data)))
+         (most-asleep-minute (find-guard-most-asleep-minute data most-asleep-guard)))
     (* (string->number most-asleep-guard)
        most-asleep-minute)))
 
-(print "Part 1")
-(print "======")
-(print "TEST " (solve-part1 TEST-INPUT))
-(print "INPUT " (solve-part1 (with-input-from-file "input" read-string)))
+(define (find-most-slept-minute records)
+  (let ((minutes (make-hash-table)))
+    (for-each
+     (lambda (s)
+       (for-each
+        (lambda (pair)
+          (for-each
+           (lambda (minute)
+             (let ((key (cons (shift-guard-id s) minute)))
+               (hash-table-set! minutes key
+                                (+ 1 (hash-table-ref/default minutes key 0)))))
+           (iota (- (second pair) (first pair)) (first pair))))
+        (zip (map string->number (shift-sleeps s))
+             (map string->number (shift-wakeups s)))))
+     (hash-table-values records))
+    (car (sort (hash-table->alist minutes)
+               (lambda (a b) (> (cdr a) (cdr b)))))))
+
+(define (solve-part2 data)
+  (let ((item (find-most-slept-minute data)))
+    (* (string->number (car (car item)))
+       (cdr (car item)))))
+
+(let ((test-data (parse-input TEST-INPUT))
+      (input-data (parse-input (with-input-from-file "input" read-string))))
+  (print "Part 1")
+  (print "======")
+  (print "TEST " (solve-part1 test-data))
+  (print "INPUT " (solve-part1 input-data))
+
+  (print)
+  (print "Part 2")
+  (print "======")
+  (print "TEST " (solve-part2 test-data))
+  (print "INPUT " (solve-part2 input-data)))
