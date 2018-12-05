@@ -14,10 +14,8 @@
 
 (define all-pairs (append-map one-pair (iota 26)))
 
-(define reaction-regex (irregex-opt all-pairs))
-
 (define (polymer-react s)
-  (irregex-replace/all reaction-regex s))
+  (string-translate* s (map (lambda (pair) (cons pair "")) all-pairs)))
 
 (define (polymer-react/full data #!optional progress)
   (let loop ((s data)
