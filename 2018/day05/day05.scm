@@ -7,40 +7,35 @@
 (import (chicken string))
 (import srfi-1)
 
-(define (one-pair n)
-  (let* ((lchar (integer->char (+ n (char->integer #\a))))
-         (uchar (char-upcase lchar)))
-    (list (string lchar uchar) (string uchar lchar))))
+(define (is-pair? c1 c2)
+  (char=? c2 (if (char-upper-case? c1)
+                 (char-downcase c1)
+                 (char-upcase c1))))
 
-(define all-pairs (append-map one-pair (iota 26)))
-
-(define (polymer-react s)
-  (string-translate* s (map (lambda (pair) (cons pair "")) all-pairs)))
-
-(define (polymer-react/full data #!optional progress)
-  (let loop ((s data)
+(define (polymer-react/full data)
+  (let loop ((s (string->list data))
              (len (string-length data)))
-    (when progress
-      (print "Current length: " len))
-    (set! s (polymer-react s))
-    (let ((new-len (string-length s)))
+    (set! s (fold (lambda (c rest)
+                    (if (and (pair? rest)
+                             (is-pair? c (car rest)))
+                        (cdr rest)
+                        (cons c rest)))
+                  '() s))
+    (let ((new-len (length s)))
       (if (= new-len len)
-          s
+          (apply string s)
           (loop s new-len)))))
 
 (define (solve-part1 data)
-  (string-length (polymer-react/full data #t)))
+  (string-length (polymer-react/full data)))
 
 (define (remove-char s n)
   (let ((char (integer->char (+ n (char->integer #\a)))))
     (irregex-replace/all (irregex char 'case-insensitive) s)))
 
 (define (solve-part2 data)
-  (let* ((baseline (begin
-                    (print "Full reaction…")
-                    (polymer-react/full data)))
+  (let* ((baseline (polymer-react/full data))
          (shorts (map (lambda (n)
-                        (print "Processing " n)
                         (polymer-react/full (remove-char baseline n)))
                       (iota 26))))
     (apply min (map string-length shorts))))
