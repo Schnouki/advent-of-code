@@ -46,7 +46,7 @@ Step F must be finished before step E can begin.")
                                             states))
                             char<?
                             )))
-    (if (null-list? next-states)
+    (if (= 0 (length next-states))
         #f
         (car next-states))))
 
@@ -122,6 +122,7 @@ Step F must be finished before step E can begin.")
   (print "TEST  " (solve-part1 test-data))
   (print "INPUT " (solve-part1 input-data))
 
+  (print)
   (print "Part 2")
   (print "======")
   (print "TEST  " (solve-part2 test-data 2 0))
