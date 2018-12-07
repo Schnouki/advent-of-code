@@ -78,10 +78,29 @@
                              seeds
                              (vector->list counts)))))))
 
+(define (solve-part2 seeds max-dist)
+  "Compute the size of the region with a total distance of less than MAX-DIST."
+  (let* ((width (+ 2 (max-x seeds)))
+         (height (+ 2 (max-y seeds)))
+         (sum-dist (lambda (c)
+                     (let* ((point (cons (remainder c width)
+                                        (quotient c width)))
+                            (dist-seed (lambda (seed) (dist seed point))))
+                       (apply + (map dist-seed seeds))))))
+    (length (filter (lambda (sd) (< sd max-dist))
+                    (map sum-dist (iota (* width height)))))))
+
+
 
 (let ((test-data (parse-input TEST-INPUT))
       (input-data (parse-input (string-chomp (with-input-from-file "input" read-string)))))
   (print "Part 1")
   (print "======")
-  (print "TEST " (solve-part1 test-data))
-  (print "INPUT " (solve-part1 input-data)))
+  (print "TEST  " (solve-part1 test-data))
+  (print "INPUT " (solve-part1 input-data))
+
+  (print)
+  (print "Part 2")
+  (print "======")
+  (print "TEST  " (solve-part2 test-data 32))
+  (print "INPUT " (solve-part2 input-data 10000)))
