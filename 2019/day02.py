@@ -11,40 +11,32 @@ from typing import List
 @attr.s
 class IntcodeComputer:
     mem: List[int] = attr.ib()
-    idx: int = attr.ib(default=0)
+    ip: int = attr.ib(default=0)
     halted: bool = attr.ib(default=False)
 
-    def _ensure_size(self, size):
-        if len(self.mem) > size:
-            return
-        self.mem += [0] * (size - len(self.mem))
-
     def get(self, pos):
-        self._ensure_size(pos)
         return self.mem[pos]
 
     def set(self, pos, value):
-        self._ensure_size(pos)
         self.mem[pos] = value
 
     def step(self):
         if self.halted:
             return
-
-        op = self.get(self.idx)
+        op = self.get(self.ip)
 
         if op == 1:
-            pos1 = self.get(self.idx + 1)
-            pos2 = self.get(self.idx + 2)
-            pos3 = self.get(self.idx + 3)
-            self.set(pos3, self.get(pos1) + self.get(pos2))
-            self.idx += 4
+            addr1 = self.get(self.ip + 1)
+            addr2 = self.get(self.ip + 2)
+            addr3 = self.get(self.ip + 3)
+            self.set(addr3, self.get(addr1) + self.get(addr2))
+            self.ip += 4
         elif op == 2:
-            pos1 = self.get(self.idx + 1)
-            pos2 = self.get(self.idx + 2)
-            pos3 = self.get(self.idx + 3)
-            self.set(pos3, self.get(pos1) * self.get(pos2))
-            self.idx += 4
+            addr1 = self.get(self.ip + 1)
+            addr2 = self.get(self.ip + 2)
+            addr3 = self.get(self.ip + 3)
+            self.set(addr3, self.get(addr1) * self.get(addr2))
+            self.ip += 4
         elif op == 99:
             self.halted = True
         else:
@@ -75,6 +67,17 @@ class Day02(Puzzle):
             data.mem[2] = 2
         data.run()
         return str(data.mem[0])
+
+    def run_part2(self, data):
+        orig_mem = data.mem[:]
+        for noun in range(101):
+            for verb in range(101):
+                data = IntcodeComputer(orig_mem[:])
+                data.mem[1] = noun
+                data.mem[2] = verb
+                data.run()
+                if data.mem[0] == 19690720:
+                    return 100*noun + verb
 
 
 run(obj=Day02())
