@@ -34,6 +34,7 @@ class Pos:
 class Wire:
     p1: Pos = attr.ib()
     p2: Pos = attr.ib()
+    swapped: bool = attr.ib(default=False)
 
     def __attrs_post_init__(self):
         # Normalize points to make sure that p1.x < p2.x if the wire is
@@ -42,11 +43,20 @@ class Wire:
         if (direction == "H" and self.p1.x > self.p2.x) or (
             direction == "V" and self.p1.y > self.p2.y
         ):
+            self.swapped = not self.swapped
             self.p1, self.p2 = self.p2, self.p1
 
     @property
     def direction(self):
         return "V" if self.p1.x == self.p2.x else "H"
+
+    @property
+    def length(self):
+        return abs(self.p1.x - self.p2.x) + abs(self.p1.y - self.p2.y)
+
+    def partial_length(self, to):
+        start = self.p2 if self.swapped else self.p1
+        return abs(start.x - to.x) + abs(start.y - to.y)
 
     def intersection(self, other: "Wire") -> Optional[Pos]:
         # Same direction: they don't intersect.
@@ -93,6 +103,7 @@ class Day03(Puzzle):
         "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7",
     ]
     test_result_part1 = ["6", "159", "135"]
+    test_result_part2 = ["30", "610", "410"]
 
     def prepare_data(self, data):
         return [parse_path(path) for path in data.splitlines()]
@@ -105,6 +116,21 @@ class Day03(Puzzle):
             if pos and not (pos.x == pos.y == 0):
                 intersections.append(pos)
         return str(min(pos.dist_central for pos in intersections))
+
+    def run_part2(self, data):
+        path1, path2 = data[0], data[1]
+        best_steps = 1e12
+
+        for (n1, w1), (n2, w2) in it.product(enumerate(path1), enumerate(path2)):
+            pos = w1.intersection(w2)
+            if pos is None or pos.x == pos.y == 0:
+                continue
+
+            steps1 = sum(w.length for w in path1[:n1]) + w1.partial_length(pos)
+            steps2 = sum(w.length for w in path2[:n2]) + w2.partial_length(pos)
+            best_steps = min(steps1 + steps2, best_steps)
+
+        return str(best_steps)
 
 
 run(obj=Day03())
