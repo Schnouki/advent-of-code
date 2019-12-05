@@ -7,6 +7,8 @@ from typing import Any, List
 
 import click
 
+import intcode
+
 
 class BasePuzzle(abc.ABC):
     test_data: List[str] = []
@@ -44,6 +46,12 @@ class Puzzle(BasePuzzle):
         filename = Path(".") / "inputs" / self.__class__.__name__.lower()
         with filename.open() as input_file:
             return input_file.read()
+
+
+class IntcodePuzzle(Puzzle):
+    def prepare_data(self, data):
+        mem = [int(x) for x in data.split(",")]
+        return intcode.Computer(mem)
 
 
 class InlinePuzzle(BasePuzzle):

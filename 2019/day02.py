@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from aoc import Puzzle, run
-from intcode import Computer
+from aoc import IntcodePuzzle, run
 
 
-class Day02(Puzzle):
+class Day02(IntcodePuzzle):
     test_data = [
         "1,9,10,3,2,3,11,0,99,30,40,50",
         "1,0,0,0,99",
@@ -13,10 +12,6 @@ class Day02(Puzzle):
         "1,1,1,4,99,5,6,0,99",
     ]
     test_result_part1 = ["3500", "2", "2", "2", "30"]
-
-    def prepare_data(self, data):
-        mem = [int(x) for x in data.split(",")]
-        return Computer(mem)
 
     def run_part1(self, data):
         data = data.copy()
