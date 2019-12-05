@@ -1,53 +1,7 @@
 #!/usr/bin/env python3
 
-from typing import List
-
-import attr
-
 from aoc import Puzzle, run
-from typing import List
-
-
-@attr.s
-class IntcodeComputer:
-    mem: List[int] = attr.ib()
-    ip: int = attr.ib(default=0)
-    halted: bool = attr.ib(default=False)
-
-    def copy(self):
-        return IntcodeComputer(self.mem[:], 0, False)
-
-    def get(self, pos):
-        return self.mem[pos]
-
-    def set(self, pos, value):
-        self.mem[pos] = value
-
-    def step(self):
-        if self.halted:
-            return
-        op = self.get(self.ip)
-
-        if op == 1:
-            addr1 = self.get(self.ip + 1)
-            addr2 = self.get(self.ip + 2)
-            addr3 = self.get(self.ip + 3)
-            self.set(addr3, self.get(addr1) + self.get(addr2))
-            self.ip += 4
-        elif op == 2:
-            addr1 = self.get(self.ip + 1)
-            addr2 = self.get(self.ip + 2)
-            addr3 = self.get(self.ip + 3)
-            self.set(addr3, self.get(addr1) * self.get(addr2))
-            self.ip += 4
-        elif op == 99:
-            self.halted = True
-        else:
-            raise ValueError(op)
-
-    def run(self):
-        while not self.halted:
-            self.step()
+from intcode import Computer
 
 
 class Day02(Puzzle):
@@ -62,7 +16,7 @@ class Day02(Puzzle):
 
     def prepare_data(self, data):
         mem = [int(x) for x in data.split(",")]
-        return IntcodeComputer(mem)
+        return Computer(mem)
 
     def run_part1(self, data):
         data = data.copy()
@@ -80,7 +34,7 @@ class Day02(Puzzle):
                 data.mem[2] = verb
                 data.run()
                 if data.mem[0] == 19690720:
-                    return 100*noun + verb
+                    return 100 * noun + verb
 
 
 run(obj=Day02())
