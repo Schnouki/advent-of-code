@@ -46,6 +46,13 @@ class Puzzle(BasePuzzle):
             return input_file.read()
 
 
+class InlinePuzzle(BasePuzzle):
+    puzzle_input = ""
+
+    def get_input(self):
+        return self.puzzle_input
+
+
 @click.command()
 @click.option("-1", "p1", help="Run part 1", is_flag=True)
 @click.option("-2", "p2", help="Run part 2", is_flag=True)
