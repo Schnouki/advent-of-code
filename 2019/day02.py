@@ -14,6 +14,9 @@ class IntcodeComputer:
     ip: int = attr.ib(default=0)
     halted: bool = attr.ib(default=False)
 
+    def copy(self):
+        return IntcodeComputer(self.mem[:], 0, False)
+
     def get(self, pos):
         return self.mem[pos]
 
@@ -62,17 +65,17 @@ class Day02(Puzzle):
         return IntcodeComputer(mem)
 
     def run_part1(self, data):
+        data = data.copy()
         if not self.test_mode:
             data.mem[1] = 12
             data.mem[2] = 2
         data.run()
         return str(data.mem[0])
 
-    def run_part2(self, data):
-        orig_mem = data.mem[:]
+    def run_part2(self, orig_data):
         for noun in range(101):
             for verb in range(101):
-                data = IntcodeComputer(orig_mem[:])
+                data = orig_data.copy()
                 data.mem[1] = noun
                 data.mem[2] = verb
                 data.run()
