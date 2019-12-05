@@ -12,34 +12,34 @@ class Computer:
     def copy(self):
         return self.__class__(self.mem[:], 0, False)
 
-    def get(self, pos):
-        return self.mem[pos]
-
-    def set(self, pos, value):
-        self.mem[pos] = value
+    def run(self):
+        while not self.halted:
+            self.step()
 
     def step(self):
         if self.halted:
             return
-        op = self.get(self.ip)
+        op = self.mem[self.ip]
 
-        if op == 1:
-            addr1 = self.get(self.ip + 1)
-            addr2 = self.get(self.ip + 2)
-            addr3 = self.get(self.ip + 3)
-            self.set(addr3, self.get(addr1) + self.get(addr2))
-            self.ip += 4
-        elif op == 2:
-            addr1 = self.get(self.ip + 1)
-            addr2 = self.get(self.ip + 2)
-            addr3 = self.get(self.ip + 3)
-            self.set(addr3, self.get(addr1) * self.get(addr2))
-            self.ip += 4
-        elif op == 99:
-            self.halted = True
-        else:
-            raise ValueError(op)
+        op_func_name = f"op_{op}"
+        if not hasattr(self, op_func_name):
+            raise ValueError(f"Invalid opcode {op} at address {self.ip}")
 
-    def run(self):
-        while not self.halted:
-            self.step()
+        self.ip += getattr(self, op_func_name)()
+
+    def op_1(self):
+        """Addition. *(ip+3) = *(ip+1) + *(ip+2)."""
+        addrs = self.mem[self.ip + 1 : self.ip + 4]
+        self.mem[addrs[2]] = self.mem[addrs[0]] + self.mem[addrs[1]]
+        return 4
+
+    def op_2(self):
+        """Multiplication. *(ip+3) = *(ip+1) * *(ip+2)."""
+        addrs = self.mem[self.ip + 1 : self.ip + 4]
+        self.mem[addrs[2]] = self.mem[addrs[0]] * self.mem[addrs[1]]
+        return 4
+
+    def op_99(self):
+        """Halt."""
+        self.halted = True
+        return 1
