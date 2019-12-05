@@ -79,6 +79,14 @@ class Computer:
         """Multiplication. v3 = v1 * v2"""
         self.mem[v3] = self.get(m1, v1) * self.get(m2, v2)
 
+    def op_3(self, m1, v1):
+        """Input. v1 = i[0]"""
+        self.mem[v1] = self.inputs.pop(0)
+
+    def op_4(self, m1, v1):
+        """Output. o += v1"""
+        self.outputs.append(self.get(m1, v1))
+
     def op_99(self):
         """Halt."""
         self.halted = True
