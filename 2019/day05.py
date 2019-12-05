@@ -12,5 +12,11 @@ class Day05(IntcodePuzzle):
             assert data.outputs[n] == 0
         return data.outputs[-1]
 
+    def run_part2(self, data):
+        data = data.copy()
+        data.inputs = [5]
+        data.run()
+        return data.outputs[0]
+
 
 run(obj=Day05())

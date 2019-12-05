@@ -59,8 +59,10 @@ class Computer:
             params = []
             for idx, mode in enumerate(modes[::-1], 1):
                 params += [mode, self.mem[self.ip + idx]]
+            ip_before = self.ip
             op_func(self, *params)
-            self.ip += nb_params + 1
+            if self.ip == ip_before:
+                self.ip += nb_params + 1
 
         return func
 
@@ -86,6 +88,24 @@ class Computer:
     def op_4(self, m1, v1):
         """Output. o += v1"""
         self.outputs.append(self.get(m1, v1))
+
+    def op_5(self, m1, v1, m2, v2):
+        """Jump-if-true. ip = v2 if v1 != 0"""
+        if self.get(m1, v1) != 0:
+            self.ip = self.get(m2, v2)
+
+    def op_6(self, m1, v1, m2, v2):
+        """Jump-if-false. ip = v2 if v1 == 0"""
+        if self.get(m1, v1) == 0:
+            self.ip = self.get(m2, v2)
+
+    def op_7(self, m1, v1, m2, v2, m3, v3):
+        """Less-than. v3 = 1 if v1 < v2 else 0"""
+        self.mem[v3] = 1 if self.get(m1, v1) < self.get(m2, v2) else 0
+
+    def op_8(self, m1, v1, m2, v2, m3, v3):
+        """Equals. v3 = 1 if v1 == v2 else 0"""
+        self.mem[v3] = 1 if self.get(m1, v1) == self.get(m2, v2) else 0
 
     def op_99(self):
         """Halt."""
