@@ -12,8 +12,8 @@ import intcode
 
 class BasePuzzle(abc.ABC):
     test_data: List[str] = []
-    test_result_part1 = []
-    test_result_part2 = []
+    test_result_part1: List[str] = []
+    test_result_part2: List[str] = []
 
     test_mode = False
 
