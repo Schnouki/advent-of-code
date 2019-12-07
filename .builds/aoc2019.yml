@@ -1,0 +1,14 @@
+image: alpine/3.10
+packages:
+  - python3
+sources:
+  - https://github.com/Schnouki/advent-of-code
+tasks:
+  - setup: |
+      pip3 install --user -r advent-of-code/2019/requirements.txt
+  - run_tests: |
+      cd advent-of-code/2019
+      ./run_all.sh -t12
+  - run_real: |
+      cd advent-of-code/2019
+      ./run_all.sh -12

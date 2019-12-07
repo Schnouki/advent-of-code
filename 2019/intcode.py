@@ -40,7 +40,7 @@ class Computer:
         func(self)
 
     @classmethod
-    @functools.lru_cache
+    @functools.lru_cache()
     def decode_op(cls, op_str):
         op = int(op_str[-2:])
 
