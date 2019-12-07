@@ -12,6 +12,8 @@ import intcode
 
 class BasePuzzle(abc.ABC):
     test_data: List[str] = []
+    test_data_part1: List[str] = []
+    test_data_part2: List[str] = []
     test_result_part1: List[str] = []
     test_result_part2: List[str] = []
 
@@ -30,9 +32,9 @@ class BasePuzzle(abc.ABC):
     def run_part2(self, data: Any) -> str:
         return "not implemented"
 
-    def run_test(self, runner, test_result) -> bool:
+    def run_test(self, runner, test_data, test_result) -> bool:
         self.test_mode = True
-        for idx, raw_data in enumerate(self.test_data):
+        for idx, raw_data in enumerate(test_data):
             data = self.prepare_data(raw_data)
             res = runner(data)
             if res != test_result[idx]:
@@ -76,10 +78,12 @@ def run(ctx, p1, p2, test):
         print(f"  failed: {dt_failed}/{dt_total}")
         if p1:
             print("RUNNING TESTS FOR PART 1")
-            puzzle.run_test(puzzle.run_part1, puzzle.test_result_part1)
+            test_data = puzzle.test_data + puzzle.test_data_part1
+            puzzle.run_test(puzzle.run_part1, test_data, puzzle.test_result_part1)
         if p2:
             print("RUNNING TESTS FOR PART 2")
-            puzzle.run_test(puzzle.run_part2, puzzle.test_result_part2)
+            test_data = puzzle.test_data + puzzle.test_data_part2
+            puzzle.run_test(puzzle.run_part2, test_data, puzzle.test_result_part2)
     else:
         raw_data = puzzle.get_input()
         data = puzzle.prepare_data(raw_data)

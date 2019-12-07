@@ -19,12 +19,16 @@ class Computer:
     ip: int = attr.ib(default=0)
     halted: bool = attr.ib(default=False)
 
+    breakpoint = False
+    break_on_output = False
+
     def copy(self):
         return self.__class__(self.mem[:], self.inputs[:], self.outputs[:], 0, False)
 
     def run(self):
-        while not self.halted:
+        while not (self.halted or self.breakpoint):
             self.step()
+        self.breakpoint = False
 
     def step(self):
         """Run a single step of the program."""
@@ -88,6 +92,8 @@ class Computer:
     def op_4(self, m1, v1):
         """Output. o += v1"""
         self.outputs.append(self.get(m1, v1))
+        if self.break_on_output:
+            self.breakpoint = True
 
     def op_5(self, m1, v1, m2, v2):
         """Jump-if-true. ip = v2 if v1 != 0"""
