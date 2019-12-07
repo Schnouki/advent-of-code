@@ -4,7 +4,6 @@ from collections import Counter
 import itertools as it
 
 import attr
-import tqdm
 
 from aoc import InlinePuzzle, run
 
@@ -65,17 +64,17 @@ class Day04(InlinePuzzle):
 
     def run_part1(self, data):
         count = 0
-        for pw in tqdm.trange(data[0], data[1] + 1):
+        for pw in range(data[0], data[1] + 1):
             if is_valid_p1(str(pw)):
                 count += 1
-        return count
+        return str(count)
 
     def run_part2(self, data):
         count = 0
-        for pw in tqdm.trange(data[0], data[1] + 1):
+        for pw in range(data[0], data[1] + 1):
             if is_valid_p2(str(pw)):
                 count += 1
-        return count
+        return str(count)
 
 
 run(obj=Day04())

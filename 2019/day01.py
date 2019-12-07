@@ -41,10 +41,10 @@ class Day01(Puzzle):
         return [int(line) for line in data.splitlines()]
 
     def run_part1(self, data):
-        return sum(fuel(m) for m in data)
+        return str(sum(fuel(m) for m in data))
 
     def run_part2(self, data):
-        return sum(full_fuel(m) for m in data)
+        return str(sum(full_fuel(m) for m in data))
 
 
 run(obj=Day01())

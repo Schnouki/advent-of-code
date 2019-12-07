@@ -4,7 +4,7 @@ from aoc import IntcodePuzzle, run
 
 
 class Day02(IntcodePuzzle):
-    test_data = [
+    test_data_part1 = [
         "1,9,10,3,2,3,11,0,99,30,40,50",
         "1,0,0,0,99",
         "2,3,0,3,99",
@@ -29,7 +29,7 @@ class Day02(IntcodePuzzle):
                 data.mem[2] = verb
                 data.run()
                 if data.mem[0] == 19690720:
-                    return 100 * noun + verb
+                    return str(100 * noun + verb)
 
 
 run(obj=Day02())

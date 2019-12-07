@@ -10,13 +10,13 @@ class Day05(IntcodePuzzle):
         data.run()
         for n in range(len(data.outputs) - 1):
             assert data.outputs[n] == 0
-        return data.outputs[-1]
+        return str(data.outputs[-1])
 
     def run_part2(self, data):
         data = data.copy()
         data.inputs = [5]
         data.run()
-        return data.outputs[0]
+        return str(data.outputs[0])
 
 
 run(obj=Day05())

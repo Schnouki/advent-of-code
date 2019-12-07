@@ -57,7 +57,7 @@ class Object:
 class Day06(Puzzle):
     test_data = ["COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L"]
     test_result_part1 = ["3,7,0,42"]
-    test_result_part2 = [4]
+    test_result_part2 = ["4"]
 
     def prepare_data(self, data):
         return Object.from_input([line.split(")") for line in data.splitlines()])
@@ -88,7 +88,8 @@ class Day06(Puzzle):
                 common_center = center
                 break
         # Distance between each center and the common parent
-        return you_centers.index(common_center) + san_centers.index(common_center)
+        dist = you_centers.index(common_center) + san_centers.index(common_center)
+        return str(dist)
 
 
 run(obj=Day06())
