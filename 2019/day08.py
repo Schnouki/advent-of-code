@@ -7,6 +7,25 @@ import attr
 
 from aoc import Puzzle, run
 
+PIXELS = {
+    (0, 0, 0, 0): " ",
+    (0, 0, 0, 1): "▗",
+    (0, 0, 1, 0): "▖",
+    (0, 1, 0, 0): "▝",
+    (1, 0, 0, 0): "▘",
+    (0, 0, 1, 1): "▄",
+    (1, 1, 0, 0): "▀",
+    (0, 1, 0, 1): "▐",
+    (1, 0, 1, 0): "▌",
+    (1, 0, 0, 1): "▚",
+    (0, 1, 1, 0): "▞",
+    (0, 1, 1, 1): "▟",
+    (1, 0, 1, 1): "▙",
+    (1, 1, 0, 1): "▜",
+    (1, 1, 1, 0): "▛",
+    (1, 1, 1, 1): "█",
+}
+
 
 @attr.s
 class Image:
@@ -30,6 +49,8 @@ class Image:
         return min(range(len(self.layers)), key=lambda idx: self.counters[idx][0])
 
     def get_color(self, x: int, y: int) -> int:
+        if x > self.width or y > self.height:
+            return 0
         pos = y * self.width + x
         for layer in self.layers:
             color = layer[pos]
@@ -44,7 +65,21 @@ class Image:
                 color = self.get_color(x, y)
                 res += "█" if color == 1 else " "
             res += "\n"
-        return res
+        return res.rstrip()
+
+    def decode_mini(self) -> str:
+        res = ""
+        for y in range(int(self.height / 2)):
+            for x in range(int(self.width / 2)):
+                arr = (
+                    self.get_color(x * 2, y * 2),
+                    self.get_color(x * 2 + 1, y * 2),
+                    self.get_color(x * 2, y * 2 + 1),
+                    self.get_color(x * 2 + 1, y * 2 + 1),
+                )
+                res += PIXELS[arr]
+            res += "\n"
+        return res.rstrip()
 
 
 class Day08(Puzzle):
@@ -59,7 +94,7 @@ class Day08(Puzzle):
         return str(res)
 
     def run_part2(self, data):
-        return "\n" + data.decode()
+        return "\n" + data.decode_mini()
 
 
 run(obj=Day08())
