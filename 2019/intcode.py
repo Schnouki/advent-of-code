@@ -15,12 +15,14 @@ class Opcode(enum.Enum):
     JUMP_IF_FALSE = 6
     LESS_THAN = 7
     EQUALS = 8
+    ADJ_RB = 9
     HALT = 99
 
 
 class ParameterMode(enum.Enum):
     POSITION = 0
     IMMEDIATE = 1
+    RELATIVE = 2
 
 
 @attr.s
@@ -28,7 +30,8 @@ class Computer:
     mem: List[int] = attr.ib()
     inputs: List[int] = attr.ib(factory=lambda: [])
     outputs: List[int] = attr.ib(factory=lambda: [])
-    ip: int = attr.ib(default=0)
+    ip: int = attr.ib(default=0)  # instruction pointer
+    rb: int = attr.ib(default=0)  # relative base
     halted: bool = attr.ib(default=False)
 
     debug = False
@@ -36,7 +39,9 @@ class Computer:
     break_on_output = False
 
     def copy(self):
-        return self.__class__(self.mem[:], self.inputs[:], self.outputs[:], 0, False)
+        return self.__class__(
+            self.mem[:], self.inputs[:], self.outputs[:], 0, self.rb, False
+        )
 
     def run(self):
         while not (self.halted or self.breakpoint):
@@ -50,7 +55,7 @@ class Computer:
 
         op_str = str(self.mem[self.ip])
         if self.debug:
-            print(f"\nopcode={op_str} IP={self.ip}")
+            print(f"\nopcode={op_str} IP={self.ip} RB={self.rb} SZMEM={len(self.mem)}")
         func = self.decode_op(op_str)
         func(self)
 
@@ -87,11 +92,20 @@ class Computer:
 
         return func
 
+    def ensure_size(self, size):
+        if len(self.mem) <= size:
+            self.mem += [0] * (size - len(self.mem) + 1)
+
     def _get(self, mode, value):
         if mode == ParameterMode.POSITION:
+            self.ensure_size(value)
             return self.mem[value]
         if mode == ParameterMode.IMMEDIATE:
             return value
+        if mode == ParameterMode.RELATIVE:
+            pos = self.rb + value
+            self.ensure_size(pos)
+            return self.mem[pos]
         raise ValueError(f"Invalid parameter mode for get: {mode}")
 
     def get(self, mode, value):
@@ -100,17 +114,30 @@ class Computer:
             print(f"  < {mode.name} {value} --> {res}")
         return res
 
+    def set(self, out_mode, out_value, new_value):
+        pos = None
+        if out_mode == ParameterMode.POSITION:
+            pos = out_value
+        elif out_mode == ParameterMode.RELATIVE:
+            pos = self.rb + out_value
+        else:
+            raise ValueError(f"Invalid parameter mode for set: {mode}")
+        if self.debug:
+            print(f"  > {out_mode.name} {out_value} --> {new_value}")
+        self.ensure_size(pos)
+        self.mem[pos] = new_value
+
     def op_ADD(self, m1, v1, m2, v2, m3, v3):
         """Addition. v3 = v1 + v2"""
-        self.mem[v3] = self.get(m1, v1) + self.get(m2, v2)
+        self.set(m3, v3, self.get(m1, v1) + self.get(m2, v2))
 
     def op_MUL(self, m1, v1, m2, v2, m3, v3):
         """Multiplication. v3 = v1 * v2"""
-        self.mem[v3] = self.get(m1, v1) * self.get(m2, v2)
+        self.set(m3, v3, self.get(m1, v1) * self.get(m2, v2))
 
     def op_INPUT(self, m1, v1):
         """Input. v1 = i[0]"""
-        self.mem[v1] = self.inputs.pop(0)
+        self.set(m1, v1, self.inputs.pop(0))
 
     def op_OUTPUT(self, m1, v1):
         """Output. o += v1"""
@@ -130,11 +157,15 @@ class Computer:
 
     def op_LESS_THAN(self, m1, v1, m2, v2, m3, v3):
         """Less-than. v3 = 1 if v1 < v2 else 0"""
-        self.mem[v3] = 1 if self.get(m1, v1) < self.get(m2, v2) else 0
+        self.set(m3, v3, 1 if self.get(m1, v1) < self.get(m2, v2) else 0)
 
     def op_EQUALS(self, m1, v1, m2, v2, m3, v3):
         """Equals. v3 = 1 if v1 == v2 else 0"""
-        self.mem[v3] = 1 if self.get(m1, v1) == self.get(m2, v2) else 0
+        self.set(m3, v3, 1 if self.get(m1, v1) == self.get(m2, v2) else 0)
+
+    def op_ADJ_RB(self, m1, v1):
+        """Adjust relative base. rb += v1"""
+        self.rb += self.get(m1, v1)
 
     def op_HALT(self):
         """Halt."""
