@@ -31,6 +31,7 @@ class Computer:
     ip: int = attr.ib(default=0)
     halted: bool = attr.ib(default=False)
 
+    debug = False
     breakpoint = False
     break_on_output = False
 
@@ -48,6 +49,8 @@ class Computer:
             return
 
         op_str = str(self.mem[self.ip])
+        if self.debug:
+            print(f"\nopcode={op_str} IP={self.ip}")
         func = self.decode_op(op_str)
         func(self)
 
@@ -76,18 +79,26 @@ class Computer:
             for idx, mode in enumerate(modes[::-1], 1):
                 params += [mode, self.mem[self.ip + idx]]
             ip_before = self.ip
+            if self.debug:
+                print(op.name, params)
             op_func(self, *params)
             if self.ip == ip_before:
                 self.ip += nb_params + 1
 
         return func
 
-    def get(self, mode, value):
+    def _get(self, mode, value):
         if mode == ParameterMode.POSITION:
             return self.mem[value]
         if mode == ParameterMode.IMMEDIATE:
             return value
-        raise ValueError(f"Invalid parameter mode {mode}")
+        raise ValueError(f"Invalid parameter mode for get: {mode}")
+
+    def get(self, mode, value):
+        res = self._get(mode, value)
+        if self.debug:
+            print(f"  < {mode.name} {value} --> {res}")
+        return res
 
     def op_ADD(self, m1, v1, m2, v2, m3, v3):
         """Addition. v3 = v1 + v2"""
