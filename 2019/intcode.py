@@ -6,6 +6,18 @@ from typing import List
 import attr
 
 
+class Opcode(enum.Enum):
+    ADD = 1
+    MUL = 2
+    INPUT = 3
+    OUTPUT = 4
+    JUMP_IF_TRUE = 5
+    JUMP_IF_FALSE = 6
+    LESS_THAN = 7
+    EQUALS = 8
+    HALT = 99
+
+
 class ParameterMode(enum.Enum):
     POSITION = 0
     IMMEDIATE = 1
@@ -42,10 +54,10 @@ class Computer:
     @classmethod
     @functools.lru_cache()
     def decode_op(cls, op_str):
-        op = int(op_str[-2:])
+        op = Opcode(int(op_str[-2:]))
 
         # Find opcode function
-        op_func_name = f"op_{op}"
+        op_func_name = f"op_{op.name}"
         if not hasattr(cls, op_func_name):
             raise ValueError(f"Invalid opcode {op}")
         op_func = getattr(cls, op_func_name)
@@ -77,42 +89,42 @@ class Computer:
             return value
         raise ValueError(f"Invalid parameter mode {mode}")
 
-    def op_1(self, m1, v1, m2, v2, m3, v3):
+    def op_ADD(self, m1, v1, m2, v2, m3, v3):
         """Addition. v3 = v1 + v2"""
         self.mem[v3] = self.get(m1, v1) + self.get(m2, v2)
 
-    def op_2(self, m1, v1, m2, v2, m3, v3):
+    def op_MUL(self, m1, v1, m2, v2, m3, v3):
         """Multiplication. v3 = v1 * v2"""
         self.mem[v3] = self.get(m1, v1) * self.get(m2, v2)
 
-    def op_3(self, m1, v1):
+    def op_INPUT(self, m1, v1):
         """Input. v1 = i[0]"""
         self.mem[v1] = self.inputs.pop(0)
 
-    def op_4(self, m1, v1):
+    def op_OUTPUT(self, m1, v1):
         """Output. o += v1"""
         self.outputs.append(self.get(m1, v1))
         if self.break_on_output:
             self.breakpoint = True
 
-    def op_5(self, m1, v1, m2, v2):
+    def op_JUMP_IF_TRUE(self, m1, v1, m2, v2):
         """Jump-if-true. ip = v2 if v1 != 0"""
         if self.get(m1, v1) != 0:
             self.ip = self.get(m2, v2)
 
-    def op_6(self, m1, v1, m2, v2):
+    def op_JUMP_IF_FALSE(self, m1, v1, m2, v2):
         """Jump-if-false. ip = v2 if v1 == 0"""
         if self.get(m1, v1) == 0:
             self.ip = self.get(m2, v2)
 
-    def op_7(self, m1, v1, m2, v2, m3, v3):
+    def op_LESS_THAN(self, m1, v1, m2, v2, m3, v3):
         """Less-than. v3 = 1 if v1 < v2 else 0"""
         self.mem[v3] = 1 if self.get(m1, v1) < self.get(m2, v2) else 0
 
-    def op_8(self, m1, v1, m2, v2, m3, v3):
+    def op_EQUALS(self, m1, v1, m2, v2, m3, v3):
         """Equals. v3 = 1 if v1 == v2 else 0"""
         self.mem[v3] = 1 if self.get(m1, v1) == self.get(m2, v2) else 0
 
-    def op_99(self):
+    def op_HALT(self):
         """Halt."""
         self.halted = True
