@@ -23,7 +23,14 @@ class Day09(IntcodePuzzle):
         return ",".join(str(o) for o in data.outputs)
 
     def run_part1(self, data):
+        data = data.copy()
         data.inputs = [1]
+        data.run()
+        return str(data.outputs[0])
+
+    def run_part2(self, data):
+        data = data.copy()
+        data.inputs = [2]
         data.run()
         return str(data.outputs[0])
 
