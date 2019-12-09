@@ -14,8 +14,10 @@ class BasePuzzle(abc.ABC):
     test_data: List[str] = []
     test_data_part1: List[str] = []
     test_data_part2: List[str] = []
+    test_data_extra: List[str] = []
     test_result_part1: List[str] = []
     test_result_part2: List[str] = []
+    test_result_extra: List[str] = []
 
     test_mode = False
 
@@ -32,13 +34,18 @@ class BasePuzzle(abc.ABC):
     def run_part2(self, data: Any) -> str:
         return "not implemented"
 
+    def test_extra(self, data: Any) -> str:
+        return "not implemented"
+
     def run_test(self, runner, test_data, test_result) -> bool:
         self.test_mode = True
         for idx, raw_data in enumerate(test_data):
             data = self.prepare_data(raw_data)
             res = runner(data)
             if res != test_result[idx]:
-                click.secho(f"expected {test_result[idx]}, got {res} 🤯 ", nl=False, fg="red")
+                click.secho(
+                    f"expected {test_result[idx]}, got {res} 🤯 ", nl=False, fg="red"
+                )
                 return False
         return True
 
@@ -85,13 +92,23 @@ def run(ctx, p1, p2, test):
             click.secho("success! 🤩", fg="green")
         else:
             click.secho(f"failed {dt_failed}/{dt_total} 😱", fg="red")
+        if puzzle.test_data_extra:
+            click.echo(" ↳ Running extra tests... ", nl=False)
+            test_data = puzzle.test_data_extra
+            success = puzzle.run_test(
+                puzzle.test_extra, puzzle.test_data_extra, puzzle.test_result_extra
+            )
+            if success:
+                click.secho("success! 🤩", fg="green")
         if p1:
             click.echo(" ↳ Testing part 1... ", nl=False)
             test_data = puzzle.test_data + puzzle.test_data_part1
             if not test_data:
                 click.secho("no test data 🙉", fg="yellow")
             else:
-                success = puzzle.run_test(puzzle.run_part1, test_data, puzzle.test_result_part1)
+                success = puzzle.run_test(
+                    puzzle.run_part1, test_data, puzzle.test_result_part1
+                )
                 if success:
                     click.secho("success! 🤩", fg="green")
         if p2:
@@ -100,7 +117,9 @@ def run(ctx, p1, p2, test):
             if not test_data:
                 click.secho("no test data 🙊", fg="yellow")
             else:
-                success = puzzle.run_test(puzzle.run_part2, test_data, puzzle.test_result_part2)
+                success = puzzle.run_test(
+                    puzzle.run_part2, test_data, puzzle.test_result_part2
+                )
                 if success:
                     click.secho("success! 🤩", fg="green")
     else:
