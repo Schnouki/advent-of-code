@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-from collections import Counter
-from typing import List
-
-import attr
-
 from aoc import IntcodePuzzle, run
 
 
