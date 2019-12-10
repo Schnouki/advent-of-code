@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from collections import Counter
+import bisect
 import itertools as it
 import math
 from typing import List, Tuple
@@ -30,6 +30,10 @@ class Point:
     x: int = attr.ib()
     y: int = attr.ib()
 
+    def distance(self, other):
+        """Manhattan distance between 2 points."""
+        return abs(other.x - self.x) + abs(other.y - self.y)
+
     def direction(self, other):
         """Return the direction of other compared to self
 
@@ -52,15 +56,58 @@ class Point:
         g = math.gcd(abs(dx), abs(dy))
         return (dx // g, dy // g)
 
-    def count_directions(self, others: List["Point"]) -> Counter:
-        """Count how many points are visible in each direction."""
-        cnt = Counter()
+    def find_visible(self, others: List["Point"]) -> List["LineOfSight"]:
+        los = {}
         for other in others:
             if other == self:
                 continue
             dir_ = self.direction(other)
-            cnt[dir_] += 1
-        return cnt
+            if dir_ in los:
+                los[dir_].add_asteroid(other)
+            else:
+                los[dir_] = LineOfSight.from_origin(self, other, dir_[0], dir_[1])
+        return list(los.values())
+
+
+def dir_to_angle(dx: int, dy: int) -> float:
+    """Convert a direction to an angle.
+
+    >>> dir_to_angle(0, -1)
+    0.0
+    >>> dir_to_angle(1, -1)
+    45.0
+    >>> dir_to_angle(1, 0)
+    90.0
+    >>> dir_to_angle(-1, 1)
+    225.0
+    """
+    angle = math.degrees(math.atan2(dx, -dy))
+    if angle < 0:
+        angle += 360
+    return angle
+
+
+@attr.s
+class LineOfSight:
+    origin: Point = attr.ib()
+    dx: int = attr.ib()
+    dy: int = attr.ib()
+    angle: float = attr.ib()
+    asteroids: List[Point] = attr.ib()
+    distances: List[int] = attr.ib()
+
+    @classmethod
+    def from_origin(
+        cls, origin: Point, other: Point, dx: int, dy: int
+    ) -> "LineOfSight":
+        angle = dir_to_angle(dx, dy)
+        return cls(origin, dx, dy, angle, [other], [origin.distance(other)])
+
+    def add_asteroid(self, asteroid: Point):
+        dist = self.origin.distance(asteroid)
+        idx = bisect.bisect(self.distances, dist)
+        self.distances.insert(idx, dist)
+        self.asteroids.insert(idx, asteroid)
 
 
 @attr.s
@@ -77,30 +124,46 @@ class Map:
                     asteroids.append(Point(x, y))
         return cls(asteroids)
 
-    def find_best_monitoring_spot(self) -> int:
-        """Find the best monitoring spot.
-
-        >>> Map.from_text(TEST_MAP_1).find_best_monitoring_spot()
-        8
-        >>> Map.from_text(TEST_MAP_2).find_best_monitoring_spot()
-        33
-        >>> Map.from_text(TEST_MAP_3).find_best_monitoring_spot()
-        210
-        """
-        best = -1
+    def find_best_spot(self) -> Tuple[Point, int, List[LineOfSight]]:
+        """Find the best monitoring spot."""
+        best = (None, -1, None)
         for ast in self.asteroids:
-            cnt = ast.count_directions(self.asteroids)
-            visible = len(cnt)
-            best = max(best, visible)
+            visible = ast.find_visible(self.asteroids)
+            nb_visible = len(visible)
+            if nb_visible > best[1]:
+                best = (ast, nb_visible, visible)
         return best
 
 
 class Day10(Puzzle):
+    test_data_part1 = [
+        TEST_MAP_1,
+        TEST_MAP_2,
+        TEST_MAP_3,
+    ]
+    test_result_part1 = ["8", "33", "210"]
+
+    test_data_part2 = [TEST_MAP_3]
+    test_result_part2 = ["802"]
+
     def prepare_data(self, raw_data):
         return Map.from_text(raw_data)
 
     def run_part1(self, data):
-        return str(data.find_best_monitoring_spot())
+        return str(data.find_best_spot()[1])
+
+    def run_part2(self, data):
+        shot, last = 0, None
+        loss = data.find_best_spot()[2]
+        loss.sort(key=lambda l: l.angle)
+        while True:
+            for los in loss:
+                if los.asteroids:
+                    last = los.asteroids.pop(0)
+                    shot += 1
+
+                    if shot == 200:
+                        return str(100 * last.x + last.y)
 
 
 run(obj=Day10())
