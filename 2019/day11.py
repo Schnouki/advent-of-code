@@ -82,16 +82,14 @@ class HullPaintingRobot:
 
 class Day11(IntcodePuzzle):
     def run_part1(self, computer):
-        computer.break_on_output = True
-        # computer.debug = True
-        robot = HullPaintingRobot(computer)
+        robot = HullPaintingRobot(computer.copy())
+        robot.program.break_on_output = True
         robot.run()
         return str(len(robot.painted))
 
     def run_part2(self, computer):
-        computer.break_on_output = True
-        # computer.debug = True
         robot = HullPaintingRobot(computer)
+        robot.program.break_on_output = True
         robot.painted[(0, 0)] = 1
         robot.run()
         return robot.get_picture()
