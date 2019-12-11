@@ -64,6 +64,21 @@ class HullPaintingRobot:
         while not self.program.halted:
             self.step()
 
+    def get_picture(self) -> str:
+        min_x = min(self.painted.keys(), key=lambda p: p[0])[0]
+        max_x = max(self.painted.keys(), key=lambda p: p[0])[0]
+        min_y = min(self.painted.keys(), key=lambda p: p[1])[1]
+        max_y = max(self.painted.keys(), key=lambda p: p[1])[1]
+
+        out = "\n"
+        for y in range(min_y, max_y + 1):
+            for x in range(min_x, max_x + 1):
+                color = self.painted.get((x, y), 0)
+                out += BLACK if color == 1 else WHITE
+            out += "\n"
+
+        return out.rstrip()
+
 
 class Day11(IntcodePuzzle):
     def run_part1(self, computer):
@@ -72,6 +87,14 @@ class Day11(IntcodePuzzle):
         robot = HullPaintingRobot(computer)
         robot.run()
         return str(len(robot.painted))
+
+    def run_part2(self, computer):
+        computer.break_on_output = True
+        # computer.debug = True
+        robot = HullPaintingRobot(computer)
+        robot.painted[(0, 0)] = 1
+        robot.run()
+        return robot.get_picture()
 
 
 run(obj=Day11())
