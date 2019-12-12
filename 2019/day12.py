@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
 import itertools as it
-from typing import List
+import math
+from typing import List, Tuple
 
 import attr
 
 from aoc import Puzzle, run
+
+
+def lcm(a: int, b: int) -> int:
+    return abs(a * b) // math.gcd(a, b)
 
 
 @attr.s
@@ -43,6 +48,12 @@ class Moon:
     @property
     def total_energy(self):
         return self.potential_energy * self.kinetic_energy
+
+
+@attr.s(frozen=True)
+class Point1D:
+    pos: int = attr.ib()
+    vel: int = attr.ib()
 
 
 @attr.s
@@ -83,6 +94,40 @@ class System:
     def total_energy(self):
         return sum(m.total_energy for m in self.moons)
 
+    @staticmethod
+    def find_1_cycle(state: Tuple[Point1D]) -> int:
+        history = set([state])
+        while True:
+            velocities = [p.vel for p in state]
+            # apply gravity
+            for i, j in it.combinations(range(len(state)), 2):
+                p1, p2 = state[i].pos, state[j].pos
+                if p1 > p2:
+                    velocities[i] -= 1
+                    velocities[j] += 1
+                elif p1 < p2:
+                    velocities[i] += 1
+                    velocities[j] -= 1
+            # apply velocity
+            state = tuple(
+                Point1D(state[i].pos + velocities[i], velocities[i])
+                for i in range(len(state))
+            )
+            if state in history:
+                return len(history)
+            history.add(state)
+
+    def find_cycle(self):
+        state_x = tuple(Point1D(m.pos.x, m.vel.x) for m in self.moons)
+        state_y = tuple(Point1D(m.pos.y, m.vel.y) for m in self.moons)
+        state_z = tuple(Point1D(m.pos.z, m.vel.z) for m in self.moons)
+
+        cx = System.find_1_cycle(state_x)
+        cy = System.find_1_cycle(state_y)
+        cz = System.find_1_cycle(state_z)
+
+        return lcm(cx, lcm(cy, cz))
+
 
 class Day12(Puzzle):
     test_data = [
@@ -90,6 +135,7 @@ class Day12(Puzzle):
         "steps=100\n<x=-8, y=-10, z=0>\n<x=5, y=5, z=10>\n<x=2, y=-7, z=3>\n<x=9, y=-8, z=-3>",
     ]
     test_result_part1 = ["179", "1940"]
+    test_result_part2 = ["2772", "4686774924"]
 
     def prepare_data(self, data):
         lines = data.splitlines()
@@ -111,6 +157,9 @@ class Day12(Puzzle):
         for step in range(data.max_steps):
             data.step()
         return str(data.total_energy)
+
+    def run_part2(self, data):
+        return str(data.find_cycle())
 
 
 run(obj=Day12())
