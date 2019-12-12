@@ -50,7 +50,7 @@ class Moon:
         return self.potential_energy * self.kinetic_energy
 
 
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class Point1D:
     pos: int = attr.ib()
     vel: int = attr.ib()
@@ -95,32 +95,33 @@ class System:
         return sum(m.total_energy for m in self.moons)
 
     @staticmethod
-    def find_1_cycle(state: Tuple[Point1D]) -> int:
-        history = set([state])
-        while True:
-            velocities = [p.vel for p in state]
+    def find_1_cycle(state: List[Point1D]) -> int:
+        orig_state = [Point1D(pt.pos, pt.vel) for pt in state]
+        steps = 0
+
+        while state != orig_state or steps == 0:
+            steps += 1
+
             # apply gravity
-            for i, j in it.combinations(range(len(state)), 2):
-                p1, p2 = state[i].pos, state[j].pos
+            for pt1, pt2 in it.combinations(state, 2):
+                p1, p2 = pt1.pos, pt2.pos
                 if p1 > p2:
-                    velocities[i] -= 1
-                    velocities[j] += 1
+                    pt1.vel -= 1
+                    pt2.vel += 1
                 elif p1 < p2:
-                    velocities[i] += 1
-                    velocities[j] -= 1
+                    pt1.vel += 1
+                    pt2.vel -= 1
+
             # apply velocity
-            state = tuple(
-                Point1D(state[i].pos + velocities[i], velocities[i])
-                for i in range(len(state))
-            )
-            if state in history:
-                return len(history)
-            history.add(state)
+            for pt in state:
+                pt.pos += pt.vel
+
+        return steps
 
     def find_cycle(self):
-        state_x = tuple(Point1D(m.pos.x, m.vel.x) for m in self.moons)
-        state_y = tuple(Point1D(m.pos.y, m.vel.y) for m in self.moons)
-        state_z = tuple(Point1D(m.pos.z, m.vel.z) for m in self.moons)
+        state_x = [Point1D(m.pos.x, m.vel.x) for m in self.moons]
+        state_y = [Point1D(m.pos.y, m.vel.y) for m in self.moons]
+        state_z = [Point1D(m.pos.z, m.vel.z) for m in self.moons]
 
         cx = System.find_1_cycle(state_x)
         cy = System.find_1_cycle(state_y)
