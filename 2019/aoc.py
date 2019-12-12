@@ -3,6 +3,7 @@
 import abc
 import doctest
 from pathlib import Path
+import time
 from typing import Any, List
 
 import click
@@ -127,9 +128,19 @@ def run(ctx, p1, p2, test):
         data = puzzle.prepare_data(raw_data)
         if p1:
             click.echo("Running part 1... ", nl=False)
+            start1 = time.perf_counter()
             res1 = puzzle.run_part1(data)
-            click.echo("result: %s" % click.style(res1, fg="bright_cyan"))
+            end1 = time.perf_counter()
+            click.echo(
+                "took %.2f ms; result: %s"
+                % (((end1 - start1) * 1000), click.style(res1, fg="bright_cyan"))
+            )
         if p2:
             click.echo("Running part 2... ", nl=False)
+            start2 = time.perf_counter()
             res2 = puzzle.run_part2(data)
-            click.echo("result: %s" % click.style(res2, fg="bright_cyan"))
+            end2 = time.perf_counter()
+            click.echo(
+                "took %.2f ms; result: %s"
+                % (((end2 - start2) * 1000), click.style(res2, fg="bright_cyan"))
+            )
