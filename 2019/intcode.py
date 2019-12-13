@@ -36,6 +36,7 @@ class Computer:
 
     debug = False
     breakpoint = False
+    break_on_input = False
     break_on_output = False
 
     def copy(self):
@@ -86,8 +87,8 @@ class Computer:
             ip_before = self.ip
             if self.debug:
                 print(op.name, params)
-            op_func(self, *params)
-            if self.ip == ip_before:
+            keep_ip = op_func(self, *params)
+            if self.ip == ip_before and not keep_ip:
                 self.ip += nb_params + 1
 
         return func
@@ -137,6 +138,9 @@ class Computer:
 
     def op_INPUT(self, m1, v1):
         """Input. v1 = i[0]"""
+        if len(self.inputs) == 0 and self.break_on_input:
+            self.breakpoint = True
+            return True
         self.set(m1, v1, self.inputs.pop(0))
 
     def op_OUTPUT(self, m1, v1):
