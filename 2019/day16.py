@@ -52,14 +52,13 @@ class Day16(Puzzle):
             [
                 list(it.islice(pattern(pos), 1, len(data) + 1))
                 for pos in range(1, len(data) + 1)
-            ]
+            ],
         )
-        vector = np.array(data)
+        vec = np.array(data)
         for _ in range(100):
-            res = matrix @ vector
-            res = [int(str(m)[-1]) for m in res.tolist()[0]]
-            vector = np.array(res)
-        return "".join(str(n) for n in res[:8])
+            vec = np.array(matrix @ vec)
+            vec = np.abs(vec[0]) % 10
+        return "".join(map(str, vec[:8]))
 
     def run_part2(self, data: List[int]) -> str:
         data = data * 10000
