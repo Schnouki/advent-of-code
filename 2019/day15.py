@@ -113,7 +113,7 @@ class Robot:
             if self.position != pos:
                 self.step(direc.reverse)
 
-    def explore(self, draw=False):
+    def explore_for_oxygen(self, draw=False):
         steps: List[Direction] = []
         while self.map[self.position] != Tile.OXYSYS:
             self.visited[self.position] = True
@@ -143,6 +143,48 @@ class Robot:
                 self.step(direc)
         return steps
 
+    def explore_all(self, draw=False):
+        steps: List[Direction] = []
+        while True:
+            self.visited[self.position] = True
+            self.look_around()
+            if draw:
+                self.draw()
+
+            # Find spots to visit around me...
+            next_direcs: List[Direction] = []
+            for direc in Direction.__members__.values():
+                target_pos = direc.move(self.position)
+                if self.map[target_pos] != Tile.WALL and not self.visited[target_pos]:
+                    next_direcs.append(direc)
+
+            # Use first possible direction, or backtrack
+            if next_direcs:
+                direc = next_direcs[0]
+                steps.append(direc)
+                self.step(direc)
+            elif steps:
+                direc = steps.pop().reverse
+                self.step(direc)
+            else:
+                return
+
+    def fill_oxygen(self):
+        # Find all empty and oxygen tiles
+        empties = [pos for pos, tile in self.map.items() if tile == Tile.EMPTY]
+        if len(empties) == 0:
+            return False
+        oxys = [pos for pos, tile in self.map.items() if tile == Tile.OXYSYS]
+
+        # Spread oxygen
+        for pos in oxys:
+            for direc in Direction.__members__.values():
+                npos = direc.move(pos)
+                if npos in empties:
+                    self.map[npos] = Tile.OXYSYS
+                    empties.remove(npos)
+        return True
+
 
 class Day15(IntcodePuzzle):
     def run_part1(self, computer: Computer):
@@ -150,8 +192,21 @@ class Day15(IntcodePuzzle):
         computer.break_on_output = True
         robot = Robot(computer)
 
-        steps = robot.explore()
+        steps = robot.explore_for_oxygen()
         return str(len(steps))
+
+    def run_part2(self, computer: Computer):
+        computer = computer.copy()
+        computer.break_on_output = True
+        robot = Robot(computer)
+
+        robot.explore_all()
+        # robot.draw()
+        minutes = 0
+        while robot.fill_oxygen():
+            minutes += 1
+            # robot.draw()
+        return str(minutes)
 
 
 if __name__ == "__main__":
