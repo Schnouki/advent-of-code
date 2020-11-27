@@ -172,18 +172,22 @@ class Robot:
     def fill_oxygen(self):
         # Find all empty and oxygen tiles
         empties = [pos for pos, tile in self.map.items() if tile == Tile.EMPTY]
-        if len(empties) == 0:
-            return False
-        oxys = [pos for pos, tile in self.map.items() if tile == Tile.OXYSYS]
+        oxys = {pos for pos, tile in self.map.items() if tile == Tile.OXYSYS}
 
-        # Spread oxygen
-        for pos in oxys:
-            for direc in Direction.__members__.values():
-                npos = direc.move(pos)
-                if npos in empties:
-                    self.map[npos] = Tile.OXYSYS
-                    empties.remove(npos)
-        return True
+        minutes = 0
+        while len(empties) > 0:
+            minutes += 1
+            new_oxys = set()
+
+            for pos in oxys:
+                for direc in Direction.__members__.values():
+                    npos = direc.move(pos)
+                    if npos in empties:
+                        new_oxys.add(npos)
+                        empties.remove(npos)
+            oxys = new_oxys
+
+        return minutes
 
 
 class Day15(IntcodePuzzle):
@@ -201,11 +205,7 @@ class Day15(IntcodePuzzle):
         robot = Robot(computer)
 
         robot.explore_all()
-        # robot.draw()
-        minutes = 0
-        while robot.fill_oxygen():
-            minutes += 1
-            # robot.draw()
+        minutes = robot.fill_oxygen()
         return str(minutes)
 
 
