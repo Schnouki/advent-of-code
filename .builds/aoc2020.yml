@@ -1,0 +1,17 @@
+image: alpine/3.12
+packages:
+  - alpine-sdk
+  - python3
+  - py3-pip
+  - cython
+sources:
+  - https://git.sr.ht/~schnouki/advent-of-code
+tasks:
+  - setup: |
+      pip install --user -r advent-of-code/2020/requirements.txt
+  - run_tests: |
+      cd advent-of-code/2020
+      ./run_all.sh -t12
+  - run_real: |
+      cd advent-of-code/2020
+      ./run_all.sh -12
