@@ -73,6 +73,9 @@ def run(ctx, p1, p2, test):
     ctx.ensure_object(BasePuzzle)
     puzzle = ctx.obj
 
+    if not (p1 or p2):
+        p1 = p2 = True
+
     name = puzzle.__class__.__name__
     click.secho(f"Running {name} 🚀", fg="bright_magenta")
 
@@ -83,7 +86,8 @@ def run(ctx, p1, p2, test):
         if dt_total == 0:
             click.secho("no doctests 🙈", fg="yellow")
         elif dt_failed == 0:
-            click.secho("success! 🤩", fg="green")
+            click.secho("success! 🤩", fg="green", nl=False)
+            click.secho(f" (×{dt_total})")
         else:
             click.secho(f"failed {dt_failed}/{dt_total} 😱", fg="red")
         if puzzle.test_data_extra:
@@ -93,7 +97,8 @@ def run(ctx, p1, p2, test):
                 puzzle.test_extra, puzzle.test_data_extra, puzzle.test_result_extra
             )
             if success:
-                click.secho("success! 🤩", fg="green")
+                click.secho("success! 🤩", fg="green", nl=False)
+                click.secho(f" (×{len(test_data)})")
         if p1:
             click.echo(" ↳ Testing part 1... ", nl=False)
             test_data = puzzle.test_data + puzzle.test_data_part1
@@ -104,7 +109,8 @@ def run(ctx, p1, p2, test):
                     puzzle.run_part1, test_data, puzzle.test_result_part1
                 )
                 if success:
-                    click.secho("success! 🤩", fg="green")
+                    click.secho("success! 🤩", fg="green", nl=False)
+                    click.secho(f" (×{len(test_data)})")
         if p2:
             click.echo(" ↳ Testing part 2... ", nl=False)
             test_data = puzzle.test_data + puzzle.test_data_part2
@@ -115,7 +121,8 @@ def run(ctx, p1, p2, test):
                     puzzle.run_part2, test_data, puzzle.test_result_part2
                 )
                 if success:
-                    click.secho("success! 🤩", fg="green")
+                    click.secho("success! 🤩", fg="green", nl=False)
+                    click.secho(f" (×{len(test_data)})")
     else:
         raw_data = puzzle.get_input()
         data = puzzle.prepare_data(raw_data)
