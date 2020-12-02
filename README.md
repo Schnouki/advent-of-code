@@ -31,6 +31,6 @@ Let's do it for fun this time! Python, with a common and unified setup for scrip
 It even has a CI that run all scripts after each commit! 😁
 
 
-## 2020 [![builds.sr.ht status](https://builds.sr.ht/~schnouki/advent-of-code/aoc2020.yml.svg)](https://builds.sr.ht/~schnouki/advent-of-code/aoc2020.yml?)
+## 2020 [![builds.sr.ht status](https://builds.sr.ht/~schnouki/advent-of-code/commits/aoc2020.yml.svg)](https://builds.sr.ht/~schnouki/advent-of-code/commits/aoc2020.yml)
 
 Let's do this again! Still in Python, with the same framework as last year, and with CI on Sourcehut 🎉
