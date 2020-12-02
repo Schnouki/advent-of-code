@@ -5,7 +5,6 @@ import itertools as it
 from aoc import Puzzle, run
 
 
-
 class Day01(Puzzle):
     test_data = ["1721\n979\n366\n299\n675\n1456"]
     test_result_part1 = [514579]
@@ -19,14 +18,14 @@ class Day01(Puzzle):
         for a in data:
             b = 2020 - a
             if b in data:
-                return a*b
+                return a * b
 
     def run_part2(self, data):
         # Find 3 numbers that sum to 2020, and return their product
         for a, b in it.combinations(data, 2):
             c = 2020 - a - b
             if c in data:
-                return a*b*c
+                return a * b * c
 
 
 if __name__ == "__main__":
