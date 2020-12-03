@@ -4,19 +4,22 @@ import abc
 import doctest
 from pathlib import Path
 import time
-from typing import Any, List
+from typing import Any, List, Union, TypeVar, Generic, Callable, cast
 
 import click
 
+T = TypeVar("T")
+R = Union[int, str]
 
-class BasePuzzle(abc.ABC):
+
+class BasePuzzle(abc.ABC, Generic[T]):
     test_data: List[str] = []
     test_data_part1: List[str] = []
     test_data_part2: List[str] = []
     test_data_extra: List[str] = []
-    test_result_part1: List[str] = []
-    test_result_part2: List[str] = []
-    test_result_extra: List[str] = []
+    test_result_part1: List[R] = []
+    test_result_part2: List[R] = []
+    test_result_extra: List[R] = []
 
     test_mode = False
 
@@ -24,28 +27,28 @@ class BasePuzzle(abc.ABC):
     def get_input(self) -> str:
         ...
 
-    def prepare_data(self, raw_data: str) -> Any:
-        return raw_data
+    def prepare_data(self, raw_data: str) -> T:
+        return cast(T, raw_data)
 
-    def run_part1(self, data: Any) -> Any:
+    def run_part1(self, data: T) -> R:
         return "not implemented"
 
-    def run_part2(self, data: Any) -> Any:
+    def run_part2(self, data: T) -> R:
         return "not implemented"
 
-    def test_extra(self, data: Any) -> str:
+    def test_extra(self, data: T) -> R:
         return "not implemented"
 
-    def run_test(self, runner, test_data, test_result) -> bool:
+    def run_test(
+        self, runner: Callable[[T], R], test_data: List[str], test_result: List[R]
+    ) -> bool:
         self.test_mode = True
         for idx, raw_data in enumerate(test_data):
             data = self.prepare_data(raw_data)
             res = str(runner(data))
             expected = str(test_result[idx])
             if res != expected:
-                click.secho(
-                    f"expected {expected}, got {res} 🤯 ", nl=False, fg="red"
-                )
+                click.secho(f"expected {expected}, got {res} 🤯 ", nl=False, fg="red")
                 return False
         return True
 
